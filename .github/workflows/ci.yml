@@ -20,7 +20,7 @@ jobs:
     name: fmt, clippy, test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       # Installs the toolchain rust-toolchain.toml pins (1.94.1, with rustfmt and
       # clippy); `rustup show` stopped installing it in rustup 1.28.
       - name: Install pinned toolchain
@@ -37,7 +37,7 @@ jobs:
     name: build on MSRV 1.89
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@1.89
       - uses: Swatinem/rust-cache@v2
       # Explicit +1.89 overrides rust-toolchain.toml, which pins a newer compiler.
@@ -48,7 +48,7 @@ jobs:
     name: generated table and vendored dictionary
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Install pinned toolchain
         run: rustup toolchain install
       - uses: Swatinem/rust-cache@v2
