@@ -41,6 +41,7 @@ fn main() {
 
     let upstream = root.join("gs1-syntax/data/UPSTREAM");
     let release = read_upstream(&upstream, "dictionary.release");
+    let holders = copyright_holders(&text);
 
     let mut entries = Vec::new();
     let mut used = BTreeSet::new();
@@ -66,7 +67,7 @@ fn main() {
     }
 
     let out = root.join("gs1-syntax/src/ai.rs");
-    std::fs::write(&out, render(&entries, &release)).expect("write the table");
+    std::fs::write(&out, render(&entries, &release, &holders)).expect("write the table");
     println!(
         "{} entries, {} components, {} linters used -> {}",
         entries.len(),
@@ -88,6 +89,44 @@ fn read_upstream(path: &Path, key: &str) -> String {
         .map(|v| v.trim().to_owned())
         .filter(|v| !v.is_empty())
         .unwrap_or_else(|| panic!("{} has no `{key} = …` line", path.display()))
+}
+
+/// The `# Copyright (c) …` lines of the dictionary's header, as `years holder`
+/// with the trailing full stop and web address dropped.
+///
+/// The generated table repeats them, so they are read rather than restated: a
+/// release that moves a year carries it into `ai.rs` on the next run instead
+/// of leaving the table naming years the file no longer does. A header with
+/// none stops the run, for the same reason a missing `dictionary.release` does.
+fn copyright_holders(text: &str) -> Vec<String> {
+    let holders: Vec<String> = text
+        .lines()
+        .filter_map(|l| l.strip_prefix("# Copyright (c) "))
+        .map(|l| {
+            let l = l.split(" http").next().unwrap_or(l);
+            l.trim().trim_end_matches('.').to_owned()
+        })
+        .collect();
+    assert!(
+        !holders.is_empty(),
+        "the dictionary header has no `# Copyright (c) …` line"
+    );
+    holders
+}
+
+/// `text` as `//!` lines no wider than 78 columns, breaking only at spaces.
+fn doc_paragraph(text: &str) -> String {
+    let mut lines = Vec::new();
+    let mut line = String::from("//!");
+    for word in text.split(' ') {
+        if line.len() > 3 && line.chars().count() + 1 + word.chars().count() > 78 {
+            lines.push(std::mem::replace(&mut line, String::from("//!")));
+        }
+        line.push(' ');
+        line.push_str(word);
+    }
+    lines.push(line);
+    lines.join("\n")
 }
 
 struct Component {
@@ -292,7 +331,12 @@ fn parse_component(token: &str, used: &mut BTreeSet<&'static str>) -> Result<Com
     })
 }
 
-fn render(entries: &[Entry], release: &str) -> String {
+fn render(entries: &[Entry], release: &str, holders: &[String]) -> String {
+    let notice = doc_paragraph(&format!(
+        "The dictionary is Copyright (c) {}, and is licensed under the Apache \
+         License 2.0; see `data/LICENSE.gs1-syntax-dictionary`.",
+        holders.join(", Copyright (c) ")
+    ));
     let mut out = String::new();
     let _ = writeln!(
         out,
@@ -305,9 +349,7 @@ fn render(entries: &[Entry], release: &str) -> String {
 //! Source: GS1 Barcode Syntax Dictionary,
 //! {release}.
 //!
-//! The dictionary is Copyright (c) 2020-2021 BWIPP project, Copyright (c)
-//! 2020-2021 Zint Project, Copyright (c) 2021-2025 GS1 AISBL, and is licensed
-//! under the Apache License 2.0; see `data/LICENSE.gs1-syntax-dictionary`.
+{notice}
 
 use crate::spec::{{AiPattern, CharacterSet, Component, Entry, Linter}};
 
