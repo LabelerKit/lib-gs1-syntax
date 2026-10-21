@@ -4,6 +4,9 @@ on:
   push:
     branches: [main]
   pull_request:
+  # Lets upstream-dictionary.yml start CI on the pull request it opens: a push
+  # made with GITHUB_TOKEN raises no pull_request event.
+  workflow_dispatch:
 
 permissions:
   contents: read
