@@ -1,0 +1,9 @@
+gs1-syntax-gen
+Copyright 2026 Krystian Duma
+
+The scripts in this crate read source files of the GS1 Barcode Syntax Engine
+(https://github.com/gs1/gs1-syntax-engine) and the generator reads the GS1
+Barcode Syntax Dictionary (https://github.com/gs1/gs1-syntax-dictionary), both
+Copyright GS1 AISBL and licensed under the Apache License, Version 2.0. Neither
+is included here; what they produce is, and the attribution for that is in
+../gs1-syntax/NOTICE.

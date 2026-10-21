@@ -1,0 +1,53 @@
+lib-gs1-syntax
+Copyright 2026 Krystian Duma
+
+The attribution below is the gs1-syntax crate's, from crates/gs1-syntax/NOTICE;
+its paths are relative to crates/gs1-syntax/. gs1-syntax-gen and
+gs1-syntax-iso15223 include no third-party material.
+
+This product includes data derived from the GS1 Barcode Syntax Dictionary
+(https://github.com/gs1/gs1-syntax-dictionary), vendored at
+data/gs1-syntax-dictionary.txt and compiled into src/ai.rs. The vendored copy
+is upstream commit 3e23d02b143a2091bee22709b65459228d9f6d85 (2026-01-29), which
+is five association-rule fixes past the 2026-01-27 release, and is kept
+unmodified: it is byte-identical to upstream's file at that commit, whose
+`# Release:` line reads `UNSET` as it does between releases. The release
+identification lives in data/UPSTREAM instead, which also records the file's
+SHA-256.
+
+    Copyright (c) 2020-2021 BWIPP project. https://bwipp.terryburton.co.uk/
+    Copyright (c) 2020-2021 Zint Project. https://zint.org.uk/
+    Copyright (c) 2021-2025 GS1 AISBL
+
+That file is licensed under the Apache License, Version 2.0; a copy is at
+data/LICENSE.gs1-syntax-dictionary. src/ai.rs is generated from it and is
+therefore a derivative work: it rewrites the same rules as Rust constants,
+adding nothing and dropping nothing.
+
+It also includes data and code derived from the GS1 Barcode Syntax Engine
+(https://github.com/gs1/gs1-syntax-engine), GS1's reference implementation of
+the same dictionary, at commit cf4fa41685edce435a994ffd51415c600a9099c6
+(recorded in data/UPSTREAM). Its source files carry these notices:
+
+    Copyright (c) 2021-2026 GS1 AISBL    src/c-lib/dl.c
+    Copyright (c) 2022-2026 GS1 AISBL    src/c-lib/syntax/lint_*.c, except:
+    Copyright (c) 2023-2026 GS1 AISBL    lint_cset64.c, lint_mediatype.c
+    Copyright (c) 2024-2026 GS1 AISBL    lint_hasnondigit.c, lint_iso5218.c,
+                                         lint_packagetype.c,
+                                         lint_posinseqslash.c
+
+That project is licensed under the Apache License, Version 2.0. These things
+are taken from it. src/codes.rs holds the published code lists its linters
+check against — countries, currencies, freight unit types — decoded from the
+bitfields it stores them as into sorted arrays. data/reference-vectors.txt
+holds the UNIT_TEST_PASS and UNIT_TEST_FAIL cases from its lint_*.c files,
+extracted verbatim, which tests/reference.rs runs against this crate's own
+checks. data/digital-link-vectors.txt holds the test_URIescape and
+test_URIunescape cases from its dl.c, likewise extracted verbatim, which
+tests/digital_link.rs runs against this crate's percent-encoding. src/coupon.rs
+is translated from its lint_couponcode.c and lint_couponposoffer.c, and the
+percent-encoding in src/digital_link.rs from the URIescape and URIunescape
+functions of its dl.c; both are modified, and say so in their module
+documentation. The other modules implement the same published rules —
+the General Specifications and the Digital Link Standard — in their own way,
+and do not reproduce its code.

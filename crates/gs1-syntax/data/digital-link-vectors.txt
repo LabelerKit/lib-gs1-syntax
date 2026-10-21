@@ -1,0 +1,39 @@
+# GS1 Digital Link vectors, extracted from gs1-syntax-engine's dl.c
+# by crates/gs1-syntax-gen/extract-dl-vectors.py. Do not edit.
+# Derived from gs1-syntax-engine cf4fa41, Copyright (c) 2021-2026 GS1 AISBL, licensed under the Apache License 2.0; see NOTICE.
+#
+# kind	input	as a path	as a query
+escape	ABCDEFGHIJKLMNOPQRSTUVWXYZ	ABCDEFGHIJKLMNOPQRSTUVWXYZ	ABCDEFGHIJKLMNOPQRSTUVWXYZ
+escape	abcdefghijklmnopqrstuvwxyz	abcdefghijklmnopqrstuvwxyz	abcdefghijklmnopqrstuvwxyz
+escape	0123456789-._~	0123456789-._~	0123456789-._~
+escape	!"#%&'()*+,/:;<=>?	%21%22%23%25%26%27%28%29%2A%2B%2C%2F%3A%3B%3C%3D%3E%3F	%21%22%23%25%26%27%28%29%2A%2B%2C%2F%3A%3B%3C%3D%3E%3F
+escape	AÿB	A%FFB	A%FFB
+escape			
+escape	test	test	test
+escape	 	%20	+
+escape	 AB	%20AB	+AB
+escape	A B	A%20B	A+B
+escape	AB 	AB%20	AB+
+escape	A  B	A%20%20B	A++B
+unescape			
+unescape	test	test	test
+unescape	+	+	 
+unescape	%20	 	 
+unescape	%20AB	 AB	 AB
+unescape	A%20B	A B	A B
+unescape	AB%20	AB 	AB 
+unescape	ABC%2	ABC%2	ABC%2
+unescape	ABCD%	ABCD%	ABCD%
+unescape	A%20%20B	A  B	A  B
+unescape	A%01B	AB	AB
+unescape	A%ffB	AÿB	AÿB
+unescape	A%FfB	AÿB	AÿB
+unescape	A%fFB	AÿB	AÿB
+unescape	A%FFB	AÿB	AÿB
+unescape	A%4FB	AOB	AOB
+unescape	A%4fB	AOB	AOB
+unescape	%2B	+	+
+unescape	A%4gB	A%4gB	A%4gB
+unescape	A%4GB	A%4GB	A%4GB
+unescape	A%g4B	A%g4B	A%g4B
+unescape	A%G4B	A%G4B	A%G4B

@@ -1,0 +1,13 @@
+[package]
+name = "gs1-syntax-iso15223"
+description = "Device-label data titles (ISO 15223-1 / UDI) for GS1 application identifiers"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+publish.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+gs1-syntax = { workspace = true }

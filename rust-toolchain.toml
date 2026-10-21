@@ -1,0 +1,6 @@
+# Pin the toolchain so local builds and CI agree on one compiler.
+# Bump deliberately (and together with `workspace.package.rust-version`
+# when the MSRV actually moves), not by drifting with `stable`.
+[toolchain]
+channel = "1.94.1"
+components = ["rustfmt", "clippy"]

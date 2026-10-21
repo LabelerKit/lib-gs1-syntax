@@ -1,0 +1,12 @@
+[package]
+name = "gs1-syntax"
+description = "Parse and validate GS1 Application Identifier element strings"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+publish.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]

@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  check:
+    name: fmt, clippy, test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Installs the toolchain rust-toolchain.toml pins (1.94.1, with rustfmt and
+      # clippy); `rustup show` stopped installing it in rustup 1.28.
+      - name: Install pinned toolchain
+        run: rustup toolchain install
+      - uses: Swatinem/rust-cache@v2
+      - name: Format
+        run: cargo fmt --all --check
+      - name: Clippy
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+      - name: Test
+        run: cargo test --workspace --locked
+
+  msrv:
+    name: build on MSRV 1.89
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.89
+      - uses: Swatinem/rust-cache@v2
+      # Explicit +1.89 overrides rust-toolchain.toml, which pins a newer compiler.
+      - name: Build
+        run: cargo +1.89 build --workspace --locked
+
+  generated:
+    name: generated table and vendored dictionary
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pinned toolchain
+        run: rustup toolchain install
+      - uses: Swatinem/rust-cache@v2
+      - name: Regenerate ai.rs and check for drift
+        run: |
+          cargo run --locked -q -p gs1-syntax-gen
+          cargo fmt --all
+          git diff --exit-code
+      - name: Verify vendored dictionary checksum
+        run: |
+          expected=$(sed -n 's/^dictionary\.sha256 = //p' crates/gs1-syntax/data/UPSTREAM)
+          if [ -z "$expected" ]; then
+            echo "dictionary.sha256 is missing from crates/gs1-syntax/data/UPSTREAM"
+            exit 1
+          fi
+          echo "$expected  crates/gs1-syntax/data/gs1-syntax-dictionary.txt" | sha256sum -c -

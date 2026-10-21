@@ -1,0 +1,8 @@
+# Upstream sources this crate vendors or derives from.
+# Read by gs1-syntax-gen; checked in CI (dictionary.sha256).
+dictionary.repo = https://github.com/gs1/gs1-syntax-dictionary
+dictionary.commit = 3e23d02b143a2091bee22709b65459228d9f6d85
+dictionary.release = 3e23d02 (2026-01-29 — five association fixes past release 2026-01-27)
+dictionary.sha256 = da8a37450c53787008c7d9f4c032e03d3d29fe0c352de67d6abd78cd056dc825
+engine.repo = https://github.com/gs1/gs1-syntax-engine
+engine.commit = cf4fa41685edce435a994ffd51415c600a9099c6

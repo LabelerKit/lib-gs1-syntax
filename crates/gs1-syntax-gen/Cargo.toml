@@ -1,0 +1,13 @@
+[package]
+name = "gs1-syntax-gen"
+description = "Generates gs1-syntax's AI table from the GS1 Barcode Syntax Dictionary"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+publish.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+gs1-syntax = { workspace = true }
