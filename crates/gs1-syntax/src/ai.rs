@@ -5,7 +5,7 @@
 //! the dictionary and regenerate.
 //!
 //! Source: GS1 Barcode Syntax Dictionary,
-//! 3e23d02 (2026-01-29 — five association fixes past release 2026-01-27).
+//! bc3bff0 (2026-07-27 — 7 dictionary commits past release 2026-01-27).
 //!
 //! The dictionary is Copyright (c) 2020-2021 BWIPP project, Copyright (c)
 //! 2020-2021 Zint Project, Copyright (c) 2021-2025 GS1 AISBL, and is licensed
@@ -18,7 +18,7 @@ use crate::spec::{AiPattern, CharacterSet, Component, Entry, Linter};
 /// A dated release name where the vendored file is one, and the upstream
 /// commit where it is a snapshot between releases — the field is whatever
 /// identifies the source, not a version number this crate invents.
-pub const RELEASE: &str = "3e23d02 (2026-01-29 — five association fixes past release 2026-01-27)";
+pub const RELEASE: &str = "bc3bff0 (2026-07-27 — 7 dictionary commits past release 2026-01-27)";
 
 /// Every entry, in the dictionary's own order (lexical by AI).
 pub const ENTRIES: &[Entry] = &[
@@ -87,7 +87,12 @@ pub const ENTRIES: &[Entry] = &[
             linters: &[Linter::Csum, Linter::GcpPos2],
         }],
         requires: &[],
-        excludes: &[AiPattern("01"), AiPattern("02"), AiPattern("37")],
+        excludes: &[
+            AiPattern("01"),
+            AiPattern("02"),
+            AiPattern("37"),
+            AiPattern("235"),
+        ],
         title: "MTO GTIN",
     },
     Entry {
@@ -262,6 +267,7 @@ pub const ENTRIES: &[Entry] = &[
         requires: &[
             &[AiPattern("01")],
             &[AiPattern("02")],
+            &[AiPattern("03")],
             &[AiPattern("8006")],
             &[AiPattern("8026")],
         ],
@@ -335,6 +341,7 @@ pub const ENTRIES: &[Entry] = &[
         requires: &[
             &[AiPattern("01")],
             &[AiPattern("02")],
+            &[AiPattern("03")],
             &[AiPattern("8006")],
             &[AiPattern("8026")],
         ],
@@ -357,6 +364,7 @@ pub const ENTRIES: &[Entry] = &[
         requires: &[
             &[AiPattern("01")],
             &[AiPattern("02")],
+            &[AiPattern("03")],
             &[AiPattern("8006")],
             &[AiPattern("8026")],
         ],
@@ -398,7 +406,7 @@ pub const ENTRIES: &[Entry] = &[
             optional: false,
             linters: &[],
         }],
-        requires: &[&[AiPattern("01")]],
+        requires: &[&[AiPattern("01")], &[AiPattern("03")]],
         excludes: &[],
         title: "PCN",
     },
@@ -417,6 +425,7 @@ pub const ENTRIES: &[Entry] = &[
         }],
         requires: &[
             &[AiPattern("01"), AiPattern("21")],
+            &[AiPattern("03"), AiPattern("21")],
             &[AiPattern("8006"), AiPattern("21")],
         ],
         excludes: &[],
@@ -435,7 +444,7 @@ pub const ENTRIES: &[Entry] = &[
             optional: false,
             linters: &[],
         }],
-        requires: &[&[AiPattern("01")], &[AiPattern("8006")]],
+        requires: &[&[AiPattern("01")], &[AiPattern("03")], &[AiPattern("8006")]],
         excludes: &[],
         title: "REF. TO SOURCE",
     },
@@ -1864,6 +1873,7 @@ pub const ENTRIES: &[Entry] = &[
         requires: &[
             &[AiPattern("01")],
             &[AiPattern("02")],
+            &[AiPattern("03")],
             &[AiPattern("8006")],
             &[AiPattern("8026")],
         ],
@@ -1913,7 +1923,7 @@ pub const ENTRIES: &[Entry] = &[
                 linters: &[Linter::Iso3166],
             },
         ],
-        requires: &[&[AiPattern("01")], &[AiPattern("02")]],
+        requires: &[&[AiPattern("01")], &[AiPattern("02")], &[AiPattern("03")]],
         excludes: &[AiPattern("426")],
         title: "COUNTRY - INITIAL PROCESS",
     },
@@ -1930,7 +1940,7 @@ pub const ENTRIES: &[Entry] = &[
             optional: false,
             linters: &[Linter::Iso3166],
         }],
-        requires: &[&[AiPattern("01")], &[AiPattern("02")]],
+        requires: &[&[AiPattern("01")], &[AiPattern("02")], &[AiPattern("03")]],
         excludes: &[AiPattern("426")],
         title: "COUNTRY - PROCESS",
     },
@@ -1977,7 +1987,7 @@ pub const ENTRIES: &[Entry] = &[
                 linters: &[Linter::Iso3166],
             },
         ],
-        requires: &[&[AiPattern("01")], &[AiPattern("02")]],
+        requires: &[&[AiPattern("01")], &[AiPattern("02")], &[AiPattern("03")]],
         excludes: &[AiPattern("426")],
         title: "COUNTRY - DISASSEMBLY",
     },
@@ -1994,7 +2004,7 @@ pub const ENTRIES: &[Entry] = &[
             optional: false,
             linters: &[Linter::Iso3166],
         }],
-        requires: &[&[AiPattern("01")], &[AiPattern("02")]],
+        requires: &[&[AiPattern("01")], &[AiPattern("02")], &[AiPattern("03")]],
         excludes: &[],
         title: "COUNTRY - FULL PROCESS",
     },
@@ -2014,6 +2024,7 @@ pub const ENTRIES: &[Entry] = &[
         requires: &[
             &[AiPattern("01"), AiPattern("422")],
             &[AiPattern("02"), AiPattern("422")],
+            &[AiPattern("03"), AiPattern("422")],
         ],
         excludes: &[],
         title: "ORIGIN SUBDIVISION",
@@ -2669,7 +2680,7 @@ pub const ENTRIES: &[Entry] = &[
                 linters: &[Linter::HhMi],
             },
         ],
-        requires: &[&[AiPattern("01")], &[AiPattern("02")]],
+        requires: &[&[AiPattern("01")], &[AiPattern("02")], &[AiPattern("03")]],
         excludes: &[],
         title: "EXPIRY TIME",
     },
@@ -2686,7 +2697,10 @@ pub const ENTRIES: &[Entry] = &[
             optional: false,
             linters: &[],
         }],
-        requires: &[&[AiPattern("01"), AiPattern("10")]],
+        requires: &[
+            &[AiPattern("01"), AiPattern("10")],
+            &[AiPattern("03"), AiPattern("10")],
+        ],
         excludes: &[],
         title: "ACTIVE POTENCY",
     },
@@ -2797,7 +2811,7 @@ pub const ENTRIES: &[Entry] = &[
             optional: false,
             linters: &[],
         }],
-        requires: &[&[AiPattern("01")], &[AiPattern("02")]],
+        requires: &[&[AiPattern("01")], &[AiPattern("02")], &[AiPattern("03")]],
         excludes: &[],
         title: "PROD METHOD",
     },
@@ -2823,7 +2837,7 @@ pub const ENTRIES: &[Entry] = &[
                 linters: &[Linter::HhMi],
             },
         ],
-        requires: &[&[AiPattern("01")], &[AiPattern("02")]],
+        requires: &[&[AiPattern("01")], &[AiPattern("02")], &[AiPattern("03")]],
         excludes: &[],
         title: "TEST BY DATE",
     },
@@ -2842,6 +2856,7 @@ pub const ENTRIES: &[Entry] = &[
         }],
         requires: &[
             &[AiPattern("01"), AiPattern("416")],
+            &[AiPattern("03"), AiPattern("416")],
             &[AiPattern("8006"), AiPattern("416")],
         ],
         excludes: &[],
@@ -2860,7 +2875,7 @@ pub const ENTRIES: &[Entry] = &[
             optional: false,
             linters: &[],
         }],
-        requires: &[&[AiPattern("01")], &[AiPattern("8006")]],
+        requires: &[&[AiPattern("01")], &[AiPattern("03")], &[AiPattern("8006")]],
         excludes: &[],
         title: "FUNC STAT",
     },
@@ -2877,7 +2892,11 @@ pub const ENTRIES: &[Entry] = &[
             optional: false,
             linters: &[],
         }],
-        requires: &[&[AiPattern("7021")]],
+        requires: &[
+            &[AiPattern("01"), AiPattern("7021")],
+            &[AiPattern("03"), AiPattern("7021")],
+            &[AiPattern("8006"), AiPattern("7021")],
+        ],
         excludes: &[],
         title: "REV STAT",
     },
@@ -3625,7 +3644,7 @@ pub const ENTRIES: &[Entry] = &[
             linters: &[],
         }],
         requires: &[&[AiPattern("01")], &[AiPattern("8006")]],
-        excludes: &[],
+        excludes: &[AiPattern("03")],
         title: "PROTOCOL",
     },
     Entry {
@@ -3995,7 +4014,7 @@ pub const ENTRIES: &[Entry] = &[
             },
         ],
         requires: &[],
-        excludes: &[AiPattern("01"), AiPattern("37")],
+        excludes: &[AiPattern("01"), AiPattern("03"), AiPattern("37")],
         title: "ITIP",
     },
     Entry {
@@ -4051,7 +4070,7 @@ pub const ENTRIES: &[Entry] = &[
                 linters: &[Linter::Ss],
             },
         ],
-        requires: &[&[AiPattern("01")], &[AiPattern("02")]],
+        requires: &[&[AiPattern("01")], &[AiPattern("02")], &[AiPattern("03")]],
         excludes: &[],
         title: "PROD TIME",
     },
@@ -4068,7 +4087,7 @@ pub const ENTRIES: &[Entry] = &[
             optional: false,
             linters: &[],
         }],
-        requires: &[&[AiPattern("00")], &[AiPattern("01")]],
+        requires: &[&[AiPattern("00")], &[AiPattern("01")], &[AiPattern("03")]],
         excludes: &[],
         title: "OPTSEN",
     },
@@ -4119,7 +4138,7 @@ pub const ENTRIES: &[Entry] = &[
             optional: false,
             linters: &[],
         }],
-        requires: &[&[AiPattern("01")], &[AiPattern("8006")]],
+        requires: &[&[AiPattern("01")], &[AiPattern("03")], &[AiPattern("8006")]],
         excludes: &[],
         title: "VERSION",
     },
@@ -4248,7 +4267,7 @@ pub const ENTRIES: &[Entry] = &[
             },
         ],
         requires: &[&[AiPattern("37")]],
-        excludes: &[AiPattern("02"), AiPattern("8006")],
+        excludes: &[AiPattern("02"), AiPattern("03"), AiPattern("8006")],
         title: "ITIP CONTENT",
     },
     Entry {
@@ -4267,6 +4286,7 @@ pub const ENTRIES: &[Entry] = &[
         requires: &[
             &[AiPattern("00")],
             &[AiPattern("01"), AiPattern("21")],
+            &[AiPattern("03"), AiPattern("21")],
             &[AiPattern("253")],
             &[AiPattern("255")],
             &[AiPattern("8003")],
