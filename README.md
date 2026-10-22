@@ -43,6 +43,26 @@ vendored dictionary, regenerate and format:
 cargo run -p gs1-syntax-gen && cargo fmt --all
 ```
 
+Replacing it is itself scripted. `update-dictionary.py` fetches the newest
+`gs1-syntax-dictionary.txt` from the dictionary's `main` branch and, when its
+SHA-256 differs from the one in `UPSTREAM`, vendors it byte for byte and moves
+`UPSTREAM` and both NOTICE files along with it (the NOTICE prose describing
+the snapshot is left for a person):
+
+```sh
+python3 crates/gs1-syntax-gen/update-dictionary.py && cargo run -p gs1-syntax-gen && cargo fmt --all
+```
+
+The *Upstream dictionary* workflow
+([`.github/workflows/upstream-dictionary.yml`](.github/workflows/upstream-dictionary.yml))
+runs exactly this every Monday at 06:00 UTC, or on demand from the Actions
+tab, and opens or refreshes a pull request on the `auto/gs1-syntax-dictionary`
+branch, starting CI on it. The pull request is opened even when the tests fail
+on the new data, and as a draft when the generator refuses the file. For it to
+work, the repository must allow GitHub Actions to create pull requests
+(Settings → Actions → General); GitHub also suspends scheduled workflows in a
+repository with no activity for 60 days, so re-enable it there if it stops.
+
 The test vectors and code lists are rebuilt from a checkout of
 [gs1-syntax-engine](https://github.com/gs1/gs1-syntax-engine) at the commit
 recorded in `crates/gs1-syntax/data/UPSTREAM`; the scripts refuse a checkout
@@ -77,7 +97,9 @@ The toolchain is pinned to 1.94.1 in `rust-toolchain.toml`. The minimum
 supported Rust version is 1.89 (`rust-version` in the workspace manifest).
 
 CI (`.github/workflows/ci.yml`) runs the gates above, a 1.89 build, and a
-check that the generated table and the vendored dictionary are unchanged.
+check that the generated table and the vendored dictionary are unchanged. It
+can also be started by hand (`workflow_dispatch`), which is how the upstream
+dictionary workflow runs it on the pull requests it opens.
 
 ## Licence
 

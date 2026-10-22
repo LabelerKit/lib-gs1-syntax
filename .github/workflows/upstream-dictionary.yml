@@ -1,0 +1,121 @@
+# Once a week, look for a newer GS1 Barcode Syntax Dictionary on upstream's
+# main and, when the file has changed, open (or refresh) a pull request that
+# vendors it, regenerates ai.rs and says what a reviewer still has to do.
+#
+# The pull request always lives on one branch, so a later upstream change
+# updates it rather than opening another. It is opened even when the tests
+# fail on the new data — that is the news — and as a draft when the generator
+# itself refuses the file.
+#
+# A pull request pushed with GITHUB_TOKEN triggers no workflows, so the job
+# starts CI on the branch itself: workflow_dispatch is the one event that
+# token is allowed to raise. The repository must allow GitHub Actions to
+# create pull requests (Settings → Actions → General).
+name: Upstream dictionary
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}
+
+env:
+  BRANCH: auto/gs1-syntax-dictionary
+  CARGO_TERM_COLOR: always
+
+jobs:
+  update:
+    name: vendor a newer dictionary
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Look for a newer dictionary
+        id: check
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 crates/gs1-syntax-gen/update-dictionary.py --body "$RUNNER_TEMP/body.md"
+
+      - name: Install pinned toolchain
+        if: steps.check.outputs.changed == 'true'
+        run: rustup toolchain install
+      - uses: Swatinem/rust-cache@v2
+        if: steps.check.outputs.changed == 'true'
+
+      - name: Regenerate and test
+        id: gen
+        if: steps.check.outputs.changed == 'true'
+        run: |
+          body="$RUNNER_TEMP/body.md"
+          fence() { echo; echo '~~~'; tail -n "$1" "$2"; echo '~~~'; }
+          printf '\n### Checks run by this job\n\n' >> "$body"
+          if cargo run --locked -q -p gs1-syntax-gen > "$RUNNER_TEMP/gen.log" 2>&1; then
+            cargo fmt --all
+            echo 'generated=true' >> "$GITHUB_OUTPUT"
+            cat >> "$body" <<'EOF'
+          - `gs1-syntax-gen`: regenerated `ai.rs`.
+          EOF
+            if cargo test --workspace --locked > "$RUNNER_TEMP/test.log" 2>&1; then
+              cat >> "$body" <<'EOF'
+          - `cargo test --workspace`: passed.
+          EOF
+            else
+              {
+                cat <<'EOF'
+          - `cargo test --workspace`: **failed** on the new data.
+
+          <details><summary>Test output (tail)</summary>
+          EOF
+                fence 80 "$RUNNER_TEMP/test.log"
+                echo '</details>'
+              } >> "$body"
+            fi
+          else
+            echo 'generated=false' >> "$GITHUB_OUTPUT"
+            {
+              cat <<'EOF'
+          - `gs1-syntax-gen`: **refused the new dictionary**, so `ai.rs` is
+            unchanged and this pull request carries the data only.
+          EOF
+              fence 40 "$RUNNER_TEMP/gen.log"
+            } >> "$body"
+          fi
+
+      - name: Open or update the pull request
+        id: pr
+        if: steps.check.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v8
+        with:
+          branch: ${{ env.BRANCH }}
+          delete-branch: true
+          add-paths: |
+            NOTICE
+            crates/gs1-syntax/NOTICE
+            crates/gs1-syntax/data/UPSTREAM
+            crates/gs1-syntax/data/gs1-syntax-dictionary.txt
+            crates/gs1-syntax/src/ai.rs
+          author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+          committer: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+          commit-message: |
+            build(gs1-syntax): vendor the GS1 Barcode Syntax Dictionary at ${{ steps.check.outputs.short }}
+
+            Upstream gs1/gs1-syntax-dictionary ${{ steps.check.outputs.commit }}
+            (${{ steps.check.outputs.date }}), up from ${{ steps.check.outputs.previous }}.
+          title: 'build(gs1-syntax): vendor the GS1 Barcode Syntax Dictionary at ${{ steps.check.outputs.short }}'
+          body-path: ${{ runner.temp }}/body.md
+          draft: ${{ steps.gen.outputs.generated == 'false' }}
+
+      - name: Run CI on the pull request branch
+        if: steps.pr.outputs.pull-request-operation == 'created' || steps.pr.outputs.pull-request-operation == 'updated'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run ci.yml --repo "$GITHUB_REPOSITORY" --ref "$BRANCH"

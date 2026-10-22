@@ -49,3 +49,10 @@ MSRV is 1.89; the toolchain is pinned in `rust-toolchain.toml`.
   stay byte-identical to upstream. Its provenance lives in
   `crates/gs1-syntax/data/UPSTREAM`; CI checks the checksum recorded there.
 - Keep [NOTICE](NOTICE) in step when adding anything derived from GS1 sources.
+- A newer dictionary is vendored by `crates/gs1-syntax-gen/update-dictionary.py`,
+  which the weekly *Upstream dictionary* workflow runs to open a pull request on
+  `auto/gs1-syntax-dictionary`. That pull request still needs a person: the
+  NOTICE prose about the snapshot, `dictionary.release` if it should say more,
+  and whether `engine.commit` moves too. A push made with `GITHUB_TOKEN` raises
+  no `pull_request` event, so the workflow starts CI through `workflow_dispatch`
+  — keep that trigger in `ci.yml`.
