@@ -8,7 +8,7 @@ gs1-syntax-iso15223 include no third-party material.
 This product includes data derived from the GS1 Barcode Syntax Dictionary
 (https://github.com/gs1/gs1-syntax-dictionary), vendored at
 data/gs1-syntax-dictionary.txt and compiled into src/ai.rs. The vendored copy
-is upstream commit 3e23d02b143a2091bee22709b65459228d9f6d85 (2026-01-29), which
+is upstream commit bc3bff068557702f236f81d9481772ace750db31 (2026-07-27), which
 is five association-rule fixes past the 2026-01-27 release, and is kept
 unmodified: it is byte-identical to upstream's file at that commit, whose
 `# Release:` line reads `UNSET` as it does between releases. The release
