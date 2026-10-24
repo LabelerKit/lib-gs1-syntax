@@ -9,5 +9,8 @@ publish.workspace = true
 license.workspace = true
 repository.workspace = true
 
+[lints]
+workspace = true
+
 [dependencies]
 gs1-syntax = { workspace = true }

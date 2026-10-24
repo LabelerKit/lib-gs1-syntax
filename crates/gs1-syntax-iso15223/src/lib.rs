@@ -13,8 +13,6 @@
 //! titles — belongs here too; putting it anywhere else would split the mapping
 //! from short titles to `(Form::Titles, DataTitles)` across two places.
 
-#![deny(missing_docs)]
-
 use gs1_syntax::Field;
 use gs1_syntax::hri::{Form, Titles};
 

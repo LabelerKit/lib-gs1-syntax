@@ -24,3 +24,14 @@ publish = false
 
 [workspace.dependencies]
 gs1-syntax = { path = "crates/gs1-syntax" }
+
+# Shared lint policy inherited by every crate via `[lints] workspace = true`.
+[workspace.lints.rust]
+unsafe_op_in_unsafe_fn = "deny"
+missing_docs = "deny"
+
+[workspace.lints.clippy]
+dbg_macro = "warn"
+todo = "warn"
+undocumented_unsafe_blocks = "warn"
+unimplemented = "warn"
