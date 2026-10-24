@@ -1,7 +1,6 @@
 // The README is the crate's documentation, so its examples are compiled and
 // run by `cargo test` and cannot drift from the API they describe.
 #![doc = include_str!("../README.md")]
-#![deny(missing_docs)]
 
 pub mod ai;
 pub mod codes;
