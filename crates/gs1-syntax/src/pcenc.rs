@@ -15,12 +15,13 @@ use crate::spec::CharacterSet;
 /// `)`; every other character becomes one `%XX` per UTF-8 byte, in uppercase
 /// hex. `%` is the escape, so it must itself be escaped.
 ///
-/// The brackets are escaped although CSET 82 admits them, because the
-/// bracketed element-string form has no escape of its own:
-/// [`ElementString::parse`](crate::ElementString::parse) ends a value at the
-/// next `(` and rejects a `)` inside one. An encoder whose output is meant to
-/// be written in that form must therefore never emit them. This may be
-/// revisited if the bracketed form ever gains an escape.
+/// The brackets are escaped although CSET 82 admits them. The output is meant
+/// to be dropped into the bracketed element-string form as it is — a template
+/// substitutes it there — and in that form a bare `(` starts the next AI
+/// (see [`ElementString::parse`](crate::ElementString::parse)). That form's
+/// own escape, `\(`, would work too, but only for a caller that knows to
+/// apply it; `%28` and `%29` are data wherever they land, and decode to the
+/// same characters. `)` is escaped with `(` so the pair reads alike.
 ///
 /// No Unicode normalization is applied (the crate has no dependencies), so
 /// `o` followed by U+0301 and the precomposed `ó` encode differently. A caller
