@@ -52,6 +52,14 @@ pub struct Field {
 }
 
 impl Field {
+    /// This field in the bracketed authoring form: `(ai)` then the value, with
+    /// each `(` written `\(` so that [`ElementString::parse`] reads it back.
+    /// `)` needs no escape.
+    #[must_use]
+    pub fn bracketed(&self) -> String {
+        format!("({}){}", self.ai, self.value.replace('(', "\\("))
+    }
+
     /// Whether a separator is needed when another field follows this one.
     ///
     /// Predefined-length fields never take one: a reader knows where they
@@ -85,11 +93,13 @@ impl ElementString {
     /// [`Error`] naming the AI at fault, or the string as a whole for the
     /// association rules.
     ///
-    /// # A limit of this form
-    /// Parentheses delimit the AIs here, so data containing one cannot be
-    /// written this way even though the GS1 character set allows it. Such a
-    /// string is rejected rather than mis-parsed; build it with
-    /// [`ElementString::from_fields`], which has no such limit.
+    /// # Parentheses in data
+    /// The GS1 character set allows `(` and `)` in a value, and an opening
+    /// parenthesis is also what starts the next AI, so this form follows the
+    /// GS1 Barcode Syntax Engine's convention: `\(` is a literal `(`, `)` is
+    /// ordinary data, and a value ends only at an unescaped `(`. `\` is in
+    /// none of the GS1 character sets, so it may only be followed by `(`;
+    /// anywhere else it is an error.
     pub fn parse(input: &str) -> Result<Self, Error> {
         Self::parse_with(input, &Options::new())
     }
@@ -115,20 +125,9 @@ impl ElementString {
             let (ai, tail) = body
                 .split_once(')')
                 .ok_or_else(|| Error::general(format!("unclosed '(' in '{rest}'")))?;
-            let end = tail.find('(').unwrap_or(tail.len());
-            let (value, tail) = tail.split_at(end);
-            // A ')' left inside the value means the brackets did not nest the
-            // way this form needs. Say so rather than carry a value that
-            // cannot be written back out.
-            if value.contains(')') {
-                return Err(Error::at(
-                    ai,
-                    "carries a parenthesis, which the bracketed form cannot express — \
-                     build it with from_fields instead",
-                ));
-            }
-            fields.push(field(ai, value, options)?);
-            rest = tail;
+            let (value, after) = unescape_value(ai, tail)?;
+            fields.push(field(ai, &value, options)?);
+            rest = after;
         }
         let parsed = Self { fields };
         parsed.check_repeats()?;
@@ -137,8 +136,9 @@ impl ElementString {
         Ok(parsed)
     }
 
-    /// Builds from `(ai, value)` pairs, for data the bracketed form cannot
-    /// carry.
+    /// Builds from `(ai, value)` pairs, for callers that already hold the
+    /// fields and have no bracketed text to read — values are taken as they
+    /// are, with no escapes.
     ///
     /// # Errors
     /// As [`ElementString::parse`], less the syntax of the brackets.
@@ -168,17 +168,16 @@ impl ElementString {
         Ok(parsed)
     }
 
-    /// The bracketed form, as a person reads it.
+    /// The bracketed authoring form, which [`ElementString::parse`] reads back.
     ///
-    /// Not always readable back by [`ElementString::parse`]: a value carrying
-    /// a parenthesis — which the GS1 character set allows — comes out
-    /// ambiguous, and that is the limit of the form rather than of the value.
+    /// `ElementString::parse(&x.bracketed())` gives the same fields for every
+    /// `x` built by [`ElementString::from_fields`]: a `(` inside a value is
+    /// written `\(` so it cannot be taken for the next AI. That makes this the
+    /// *authoring* form; the caption a person reads on a label, with no
+    /// escapes, is [`crate::hri::line`].
     #[must_use]
     pub fn bracketed(&self) -> String {
-        self.fields
-            .iter()
-            .map(|f| format!("({}){}", f.ai, f.value))
-            .collect()
+        self.fields.iter().map(Field::bracketed).collect()
     }
 
     /// The encoded form: AI digits and data run together, with `separator`
@@ -299,6 +298,32 @@ impl ElementString {
         }
         Ok(())
     }
+}
+
+/// Reads one value off the front of `tail`, undoing the `\(` escape, and
+/// returns it with what follows: empty, or starting at the next AI's `(`.
+///
+/// The error names `ai`, since it is that value's text that is at fault.
+fn unescape_value<'a>(ai: &str, tail: &'a str) -> Result<(String, &'a str), Error> {
+    let mut value = String::new();
+    let mut chars = tail.char_indices();
+    while let Some((at, c)) = chars.next() {
+        match c {
+            '(' => return Ok((value, &tail[at..])),
+            '\\' => match chars.next() {
+                Some((_, '(')) => value.push('('),
+                _ => {
+                    return Err(Error::at(
+                        ai,
+                        "has a '\\' that does not escape a '(' — a backslash is not GS1 data, \
+                         so write \\( for a literal parenthesis",
+                    ));
+                }
+            },
+            c => value.push(c),
+        }
+    }
+    Ok((value, ""))
 }
 
 /// Resolves one AI and validates its data against the entry's components.
@@ -515,16 +540,63 @@ mod tests {
         assert!(ElementString::parse("(01").is_err());
     }
 
+    const GTIN: &str = "(01)09501101020917";
+
     #[test]
-    fn data_with_a_parenthesis_is_refused_not_mis_parsed() {
-        // The GS1 character set allows parentheses; the bracketed form
-        // cannot, and says so instead of splitting the value in two.
-        let err = ElementString::parse("(01)09501101020917(10)A)B").unwrap_err();
-        assert!(err.message.contains("parenthesis"), "{err}");
-        // The limit is the authoring form's, not the standard's, so the
-        // escape hatch takes the same value — and still applies (10)'s rules.
-        let ok = ElementString::from_fields([("01", "09501101020917"), ("10", "A(B)C")]).unwrap();
-        assert_eq!(ok.fields[1].value, "A(B)C");
-        assert!(ElementString::from_fields([("01", "09501101020917"), ("10", "A#B")]).is_err());
+    fn values_with_parentheses_survive_from_fields_bracketed_parse() {
+        for value in ["A(B)C", "SN(2)", "(A", "A(", "((", ")", ")("] {
+            let built = ElementString::from_fields([("01", "09501101020917"), ("10", value)])
+                .unwrap_or_else(|e| panic!("{value}: {e}"));
+            let back = ElementString::parse(&built.bracketed())
+                .unwrap_or_else(|e| panic!("{value}: {} -> {e}", built.bracketed()));
+            let pairs = |es: &ElementString| {
+                es.fields
+                    .iter()
+                    .map(|f| (f.ai.clone(), f.value.clone()))
+                    .collect::<Vec<_>>()
+            };
+            assert_eq!(pairs(&back), pairs(&built), "{value}");
+        }
+        // (4302) is CSET 82 too; the table gives no AI a space, so none is tried.
+        let built = ElementString::from_fields([
+            ("00", "095011010209171236"),
+            ("4302", "FLAT(2)5-HIGH-ST)"),
+        ])
+        .unwrap();
+        let back = ElementString::parse(&built.bracketed()).unwrap();
+        assert_eq!(back.fields[1].value, "FLAT(2)5-HIGH-ST)");
+    }
+
+    #[test]
+    fn a_closing_parenthesis_is_ordinary_data() {
+        let parsed = ElementString::parse(&format!("{GTIN}(10)A)B")).unwrap();
+        assert_eq!(parsed.fields[1].value, "A)B");
+    }
+
+    #[test]
+    fn bracketed_escapes_only_the_opening_parenthesis() {
+        let parsed = ElementString::parse(&format!("{GTIN}(10)A\\(B)C")).unwrap();
+        assert_eq!(parsed.fields[1].value, "A(B)C");
+        assert_eq!(parsed.bracketed(), format!("{GTIN}(10)A\\(B)C"));
+    }
+
+    #[test]
+    fn a_backslash_that_escapes_nothing_names_its_ai() {
+        for value in ["AB\\", "A\\)", "A\\\\", "A\\A"] {
+            let err = ElementString::parse(&format!("{GTIN}(10){value}")).expect_err(value);
+            assert_eq!(err.ai.as_deref(), Some("10"), "{value}: {err}");
+            assert!(err.message.contains("\\("), "{value}: {err}");
+        }
+    }
+
+    #[test]
+    fn escaped_characters_still_count_toward_length_and_charset() {
+        let twenty = "\\(".repeat(20);
+        assert!(ElementString::parse(&format!("{GTIN}(10){twenty}")).is_ok());
+        let over = ElementString::parse(&format!("{GTIN}(10){twenty}\\(")).unwrap_err();
+        assert_eq!(over.ai.as_deref(), Some("10"), "{over}");
+        assert!(over.message.contains("20 is the most"), "{over}");
+        // A character outside CSET 82 is still refused beside an escape.
+        assert!(ElementString::parse(&format!("{GTIN}(10)\\(#")).is_err());
     }
 }

@@ -66,19 +66,22 @@ assert!(ElementString::parse("(01)09501101020917(01)09501101020917").is_ok());
 assert!(ElementString::parse("(01)09501101020917(01)09501101020924").is_err());
 ```
 
-A value containing a parenthesis is legal GS1 data and illegible in the
-bracketed form, so that form rejects it rather than mis-parsing it. The limit
-belongs to the notation, not to the standard — `from_fields` takes the same
-value:
+A value may contain a parenthesis, which GS1 data allows. The bracketed form
+follows the GS1 Barcode Syntax Engine: write `\(` for a literal `(`, and `)`
+needs nothing, since a value ends only at an unescaped `(`. A `\` before
+anything else is an error, because a backslash is not GS1 data.
+`bracketed` writes the escapes back, so its output parses to the same fields;
+the caption a person reads, with no escapes, comes from `hri::line`:
 
 ```rust
 use gs1_syntax::ElementString;
 
-assert!(ElementString::parse("(01)09501101020917(10)A)B").is_err());
-
-let parsed = ElementString::from_fields([("01", "09501101020917"), ("10", "A(B)C")])?;
+let parsed = ElementString::parse(r"(01)09501101020917(10)A\(B)C")?;
 assert_eq!(parsed.fields[1].value, "A(B)C");
+assert_eq!(parsed.bracketed(), r"(01)09501101020917(10)A\(B)C");
 assert_eq!(parsed.concatenated('\u{1d}'), "010950110102091710A(B)C");
+
+assert!(ElementString::parse(r"(01)09501101020917(10)A\B").is_err());
 # Ok::<(), gs1_syntax::Error>(())
 ```
 
