@@ -10,6 +10,7 @@ pub mod gcp;
 pub mod hri;
 pub mod linters;
 pub mod parse;
+pub mod pcenc;
 pub mod spec;
 
 pub use digital_link::DigitalLink;

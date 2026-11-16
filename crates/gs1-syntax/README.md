@@ -131,6 +131,27 @@ assert!(ElementString::parse_with("(01)77771101020915", &options).is_err());
 Without one, those two verify only that there are enough digits for a prefix
 to be there at all.
 
+## Free text in percent-encoding
+
+AIs such as (4300) carry a name or an address, which CSET 82 cannot spell. The
+standard's answer is `%XX` over UTF-8, and [`pcenc`] writes and reads it. It
+escapes `(` and `)` as well, although CSET 82 admits them: the bracketed form
+above has no escape, so a raw bracket would end or break the value.
+
+```rust
+use gs1_syntax::{pcenc, ElementString};
+
+let name = pcenc::encode("Łódź (centrum)");
+assert_eq!(name, "%C5%81%C3%B3d%C5%BA%20%28centrum%29");
+assert_eq!(pcenc::decode(&name).as_deref(), Ok("Łódź (centrum)"));
+
+let text = format!("(00)106141412345678908(4300){name}");
+assert!(ElementString::parse(&text).is_ok());
+```
+
+No Unicode normalization is applied; normalize to NFC first if two spellings
+of the same text must encode alike.
+
 ## GS1 Digital Link
 
 The same keys, written as a web address. The dictionary already knows which AIs
