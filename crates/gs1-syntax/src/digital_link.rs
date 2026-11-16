@@ -678,6 +678,15 @@ mod tests {
     }
 
     #[test]
+    fn a_value_with_parentheses_round_trips_through_a_uri() {
+        let input = "(01)09520123456788(10)A\\(B)";
+        let uri = build("https://example.com", input).unwrap();
+        let back = DigitalLink::parse(&uri).unwrap();
+        assert_eq!(back.to_uri(), uri);
+        assert_eq!(back.element_string().bracketed(), input);
+    }
+
+    #[test]
     fn a_path_out_of_order_is_rejected_though_the_same_fields_would_build() {
         let err =
             DigitalLink::parse("https://example.com/01/09520123456788/21/SN1/10/LOT").unwrap_err();

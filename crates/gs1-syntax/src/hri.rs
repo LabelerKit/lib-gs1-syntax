@@ -155,4 +155,13 @@ mod tests {
         // Length is part of the match: (011) is not (01).
         assert!(lookup("011").is_none());
     }
+
+    /// A caption is what a person reads, so a parenthesis in data is printed
+    /// as it is — the `\(` escape belongs to the authoring form only.
+    #[test]
+    fn a_parenthesis_in_data_is_printed_without_an_escape() {
+        let f = fields("(01)09501101020917(10)A\\(B)");
+        assert_eq!(f[1].value, "A(B)");
+        assert_eq!(line(&f[1], Form::Brackets, None), "(10)A(B)");
+    }
 }
